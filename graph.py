@@ -3,7 +3,18 @@
 Created on Tue Mar 22 16:04:28 2016
 
 @author: Sam
+
+Defines a class for a graph, and some basic graphs.
+
 """
+class Vertex(object):
+    def __init__(self):
+        pass
+        
+class Edge(object):
+    def __init__(self, initial, terminal):
+        self.initial = initial
+        self.terminal  = terminal
 
 
 class Graph(object):
@@ -12,6 +23,7 @@ class Graph(object):
         """Initialises an unlabelled oriented graph object"""
         self.vertices = vertices
         self.edges = edges
+        self.good_edges = [Edge(edge[0], edge[1]) for edge in self.edges]
         self.add_vertices_from_edges = add_vertices_from_edges
         self.do_validate_edges = do_validate_edges
         self.serre = serre
@@ -26,6 +38,11 @@ class Graph(object):
         if self.serre:
             reversed_edges = [[j,i] for [i,j] in self.edges]
             self.edges.extend(reversed_edges)
+            self.good_edges = [Edge(edge[0], edge[1]) for edge in self.edges]
+    
+    def show(self):
+        print "Vertices: %s" % self.vertices
+        print "Edges: %s" % self.edges
             
 
     def validate_edges(self, add_loops_for_singletons=True):
@@ -41,6 +58,14 @@ class Graph(object):
                 if add_loops_for_singletons:
                     real_edges.append([edge[0], edge[0]])
         self.edges = real_edges
+        self.good_edges = [Edge(edge[0], edge[1]) for edge in self.edges]
+        
+    def edge_multiplicity(self, edge):
+        """
+        Returns the multiplicity of a particular edge [v,w] in the graph
+        [v,w] is not considered to be the same edge as [w,v]
+        """
+        return self.edges.count(edge)
 
     def neighbouring_edges(self, vertex, orientation=None):
         """Returns a list of edges containing a given vertex"""
@@ -91,8 +116,46 @@ class Graph(object):
     def rank(self):
         """Computes the rank of the graph using a spanning tree"""
         return len(self.edges) - len(self.spanning_tree().edges)
+        
+    def mapto(self, map_dict={}, image=True):
+        if map_dict.keys() != self.vertices:
+            print "Error: wrong input vertices."
+            map_dict = input("Please enter a new map in the form {v:f(v)}")
+        return map_dict
+        
+    def validate_homomorphism(self, map, image=None):
+        """Checks that a dictionary defines a graph homomorphism"""
+        if image==None:
+            print "No image graph provided."
+            for vertex in self.vertices:
+                if vertex in map.keys:
+                    print "Checked vertex %s" % vertex
+                else:
+                    print "Map not defined on vertex %s" % vertex
+                    return False
+                return True
+        else:
+            print "Image graph: "
+            image.show()
+            print "Map: %s" % map
+            for edge in self.edges:
+                mapped_edge = [map[edge[0]], map[edge[1]]]
+                print "Checking edge: %s. Image should be: %s" % (edge, mapped_edge)      
+                if mapped_edge in image.edges:
+                    pass
+                else:
+                    print "Fails to be homomorphism: %s not in the image graph." % mapped_edge
+                    return False
+            return True
+    
 
 def CompleteGraph(n):
-    return Graph([],[[i,j] for i in range(1,n+1) for j in range(1,n+1) if i < j])
+    return Graph(range(1,n+1),[[i,j] for i in range(1,n+1) for j in range(1,n+1) if i < j])
+    
+def Bouquet(n):
+    return Graph([1], [[1,1]]*n)
+    
+def Cycle(n):
+    return Graph(range(1,n+1), [[i,i+1] for i in range(1,n)] + [[n,1]])
          
     
