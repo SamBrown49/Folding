@@ -44,7 +44,7 @@ class Graph(object):
                             vertices.append(vertex)
                             print "Added vertex %s" % vertex
                 except TypeError:
-                    raise AttributeError("Graph incorrectly defined -- edges must be lists")
+                    raise AttributeError("Graph incorrectly defined: edges must be lists")
         if self.do_validate_edges:
             real_edges = []
             for edge in self.edges:
