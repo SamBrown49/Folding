@@ -8,22 +8,27 @@ Defines a class for a graph, and some basic graphs.
 
 """
 class Vertex(object):
-    def __init__(self):
-        pass
+    def __init__(self, id):
+        self.id = id
         
 class Edge(object):
-    def __init__(self, initial, terminal):
+    def __init__(self, initial, terminal, id):
         self.initial = initial
         self.terminal  = terminal
+        self.id = id
+        
+    def __str__(self):
+        return "[%s, %s]" % (self.initial, self.terminal)
 
 
 class Graph(object):
-    def __init__(self, vertices=[], edges=[], add_vertices_from_edges=True, 
+    def __init__(self, 
+                 vertices=[], edges=[], add_vertices_from_edges=True, 
                  do_validate_edges=True, serre=False):
         """Initialises an unlabelled oriented graph object"""
-        self.vertices = vertices
-        self.edges = edges
-        self.good_edges = [Edge(edge[0], edge[1]) for edge in self.edges]
+        #self.vertices = vertices
+        self.vertices = [Vertex(vertex) for vertex in vertices]
+        self.edges = [Edge(edge[0], edge[1], ) for edge in edges]
         self.add_vertices_from_edges = add_vertices_from_edges
         self.do_validate_edges = do_validate_edges
         self.serre = serre
@@ -39,6 +44,9 @@ class Graph(object):
             reversed_edges = [[j,i] for [i,j] in self.edges]
             self.edges.extend(reversed_edges)
             self.good_edges = [Edge(edge[0], edge[1]) for edge in self.edges]
+    
+    def edges(self):
+        print self.edges
     
     def show(self):
         print "Vertices: %s" % self.vertices
