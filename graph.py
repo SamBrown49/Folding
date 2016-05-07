@@ -12,7 +12,7 @@ class Vertex(object):
         self.id = id
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Vertex):
             return self.id == other.id
         return False
 
@@ -36,7 +36,7 @@ class Edge(object):
         return self.id
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Edge):
             return self.id == other.id
         return False
 
@@ -44,7 +44,7 @@ class Edge(object):
         return not self.__eq__(other)
 
     def is_parallel(self, other):
-        if not isinstance(other, self.__class__):
+        if not isinstance(other, Edge):
             raise AttributeError("other must be an Edge")
         return self.initial == other.initial and self.terminal == other.terminal
         
