@@ -19,6 +19,9 @@ class Vertex(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __str__(self):
+        return "Vertex with id " + str(self.id)
+
 class Edge(object):
     def __init__(self, initial, terminal, id=None):
         self.initial = initial
