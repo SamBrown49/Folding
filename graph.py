@@ -10,7 +10,15 @@ Defines a class for a graph, and some basic graphs.
 class Vertex(object):
     def __init__(self, id=None):
         self.id = id
-        
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.id == other.id
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 class Edge(object):
     def __init__(self, initial, terminal, id=None):
         self.initial = initial
@@ -24,6 +32,19 @@ class Edge(object):
     def __name__(self):
         return self.id
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.id == other.id
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def is_parallel(self, other):
+        if not isinstance(other, self.__class__):
+            raise AttributeError("other must be an Edge")
+        return self.initial == other.initial and self.terminal == other.terminal
+        
 
 class Graph(object):
     def __init__(self, 
