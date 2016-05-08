@@ -50,8 +50,52 @@ class Edge(object):
  
         
 class GraphMap(object):
-    def __init__(self, vertexmap, edgemap):
-        pass
+    """
+    Defines a class for maps between graphs. The arguments should be two
+    dictionaries, one for vertices, and one for edges. The keys and values of
+    these dictionaries should be vertex and edge objects respectively, not ids.
+    """
+    def __init__(self, vertexmap={}, edgemap={}, validate = True):
+        self.vertexmap = vertexmap
+        self.edgemap = edgemap
+        if validate:
+            print "Checking types for vertices..."
+            for v in vertexmap.keys():
+                if not isinstance(v, Vertex):
+                    print "Warning in the domain graph:", v, "not a vertex"
+                    raise AttributeError("not a vertex")
+            for v in vertexmap.values():
+                if not isinstance(v, Vertex):
+                    print "Warning in the range graph:", v, "not a vertex"
+                    raise AttributeError("not a vertex")
+            print "Checking types for edges..."
+            for e in edgemap.keys():
+                if not isinstance(e, Edge):
+                    print "Warning in the domain graph:", e, "not an edge"
+                    raise AttributeError("not an edge")
+            for e in edgemap.values():
+                if not isinstance(e, Edge):
+                    print "Warning in the range graph:", e, "not an edge"
+                    raise AttributeError("not an edge")
+            print "Checking vertex map is fully specified"
+            for e in edgemap.keys():
+                if e.initial not in vertexmap.keys():
+                    print "Map not explicitly defined on vertex", e.initial
+                    print "Adding to the definition"
+                    self.vertexmap[e.initial] = edgemap[e].initial
+                if e.terminal not in vertexmap.keys():
+                    print "Map not explicitly defined on vertex", e.terminal
+                    print "Adding to the definition"
+                    self.vertexmap[e.terminal] = edgemap[e].terminal
+            print "Checking map is well-defined"
+            for e in edgemap.keys():
+                if vertexmap[e.initial] != edgemap[e].initial:
+                    print "Failure of well-definedness at", e, e.initial
+                    raise AttributeError("Not well-defined")
+                if vertexmap[e.terminal] != edgemap[e].terminal:
+                    print "Failure of well-definedness at", e, e.terminal
+                    raise AttributeError("Not well-defined")
+            print "Map is well-defined as a map."
        
 
 class Graph(object):
