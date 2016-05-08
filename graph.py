@@ -23,6 +23,10 @@ class Edge(object):
         
     def __name__(self):
         return self.id
+        
+class GraphMap(object):
+    def __init__(self, vertexmap, edgemap):
+        pass
 
 
 class Graph(object):
@@ -172,24 +176,18 @@ class Graph(object):
         return spanning_tree_vertices, spanning_tree_edges
 
     def rank(self):
-        """Computes the rank of the graph using a spanning tree"""
-        return len(self.edges) - len(self.spanning_tree().edges)
-        
-    def mapto(self, map_dict={}, image=True):
-        if map_dict.keys() != self.vertices():
-            print "Error: wrong input vertices."
-            map_dict = input("Please enter a new map in the form {v:f(v)}")
-        return map_dict
+        """Computes the rank of the graph"""
+        return len(self.edges) - len(self.vertices())+1
         
     def validate_homomorphism(self, map, image=None):
         """Checks that a dictionary defines a graph homomorphism"""
         if image==None:
             print "No image graph provided."
-            for vertex in self.vertices():
-                if vertex in map.keys:
-                    print "Checked vertex %s" % vertex
+            for vertexid in self.vertexdict.keys():
+                if vertexid in map.keys:
+                    print "Checked vertex %s" % vertexid
                 else:
-                    print "Map not defined on vertex %s" % vertex
+                    print "Map not defined on vertex %s" % vertexid
                     return False
                 return True
         else:
@@ -197,7 +195,7 @@ class Graph(object):
             image.show()
             print "Map: %s" % map
             for edge in self.edges:
-                mapped_edge = [map[edge[0]], map[edge[1]]]
+                mapped_edge = [map[edge.initial.id], map[edge.terminal.id]]
                 print "Checking edge: %s. Image should be: %s" % (edge, mapped_edge)      
                 if mapped_edge in image.edges:
                     pass
