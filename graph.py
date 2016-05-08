@@ -34,10 +34,6 @@ class Edge(object):
         
     def __name__(self):
         return self.id
-        
-class GraphMap(object):
-    def __init__(self, vertexmap, edgemap):
-        pass
 
     def __eq__(self, other):
         if isinstance(other, Edge):
@@ -51,7 +47,12 @@ class GraphMap(object):
         if not isinstance(other, Edge):
             raise AttributeError("other must be an Edge")
         return self.initial == other.initial and self.terminal == other.terminal
+ 
         
+class GraphMap(object):
+    def __init__(self, vertexmap, edgemap):
+        pass
+       
 
 class Graph(object):
     def __init__(self, 
