@@ -137,9 +137,16 @@ class Graph(object):
         for vertex in vertices:
             self.vertexdict[vertex] = Vertex(vertex)            
         #self.vertices = [Vertex(vertex) for vertex in vertices]
-        self.edges = [Edge(self.vertexdict[edge[0]],
+        self.edgedict = {}
+        temp_edges = []
+        for i, edge in enumerate(self.edges):
+            ID = "e_%d" % i
+            edge_obj = Edge(self.vertexdict[edge[0]],
                            self.vertexdict[edge[1]],
-                           "e_%d" % i) for i, edge in enumerate(self.edges)]
+                           ID)
+            temp_edges.append(edge_obj)
+            self.edgedict[ID] = edge_obj
+        self.edges = temp_edges
         self.last_edge_index = len(self.edges)
         
     def vertices(self):
@@ -160,7 +167,7 @@ class Graph(object):
         print "Edges: "
         self.show_edges()
         
-    def edge_multiplicity(self, initial, terminal):
+    def edge_multiplicity(self, initial, terminal, ignore_orientation=True):
         """
         Returns the multiplicity of a particular edge [v,w] in the graph
         [v,w] is not considered to be the same edge as [w,v]
@@ -168,7 +175,7 @@ class Graph(object):
         count = 0
         multiple_edge_ids = []
         for edge in self.edges:
-            if edge.initial.id == initial.id and edge.terminal.id == terminal.id:
+            if edge.initial.id == initial.id and edge.terminal.id == terminal.id or (ignore_orientation and edge.initial.id == terminal.id and edge.terminal.id == initial.id):
                 count +=1
                 multiple_edge_ids.append(edge.id)
         print count, multiple_edge_ids
@@ -200,7 +207,8 @@ class Graph(object):
             #print "Error! Argument must be inward or outward."
 
     def neighbours(self, vertexid):
-        """Returns the neighbours of a given vertex"""
+        """Returns the neighbours of a given vertex. Note this does not take
+        account of orientation."""
         if vertexid not in [v.id for v in self.vertices()]:
             print "Error: vertex not found!"
             return False
@@ -212,12 +220,20 @@ class Graph(object):
             neighbours.extend(parents)
             return neighbours
 
-    def graph_dict(self):
+    def graph_dict_id(self):
         """Returns the graph as a dictionary of the form
-        {vertex:[neigbours], ...}"""
+        {vertex:[neigbours], ...} with vertex ids"""
         dcty = {}
         for vertex in self.vertices():
             dcty[vertex.id] = self.neighbours(vertex.id)
+        return dcty
+        
+    def graph_dict_obj(self):
+        """Returns the graph as a dictionary of the form
+        {vertex:[neigbours], ...} with vertex objects"""
+        dcty = {}
+        for vertex in self.vertices():
+            dcty[vertex] = [neighbour for neighbour in self.neighbours(vertex.id)]
         return dcty
 
     def spanning_tree(self):
@@ -248,6 +264,49 @@ class Graph(object):
         """Computes the rank of the graph"""
         return len(self.edges) - len(self.vertices())+1
         
+    def new_map(self, image, vertexidmap = {}, edgeidmap = {}, 
+                homomorphism = True, 
+                fold_all_edges = True):
+        """
+        Defines a map from this graph, using the IDs of vertices and edges.
+        Edges can be left out if the map is unambiguously specified by the
+        vertices.
+        """
+        print "Looking up vertices..."
+        vertexmap = {}
+        edgemap = {}
+        for vertexid in vertexidmap.keys():
+            try:
+                vertexmap[self.vertexdict[vertexid]] = image.vertexdict[vertexidmap[vertexid]]
+            except KeyError:
+                raise AttributeError("Problem at vertex with id %d" % vertexid)
+        if vertexidmap.keys() != self.vertexdict.keys():
+            print "Warning: mismatch of vertex IDs on the domain. Did you include every vertex?"
+            print "Provided vertices: ", vertexidmap.keys()
+            print "Required vertices: ", self.vertexdict.keys()
+        print "Looking up edges..."
+        for edgeid in edgeidmap.keys():
+            try:
+                edgemap[self.edgedict[edgeid]] = image.edgedict[edgeidmap[edgeid]]
+            except KeyError:
+                raise AttributeError("Problem at edge with id %d" % edgeid)
+        print "Filling in unspecified edge maps..."
+        unspecified_edges = [edge for edge in self.edges if edge.id not in edgeidmap.keys()]
+        #image_graph_dict = image.graph_dict_obj()
+        for edge in unspecified_edges:
+            #image_edge_initial = vertexmap[edge.initial]
+            multiplicity, edgeids = image.edge_multiplicity(vertexmap[edge.initial], vertexmap[edge.terminal])
+            print "Vertex ids on purported image of this edge:", vertexmap[edge.initial].id, vertexmap[edge.terminal].id
+            if multiplicity == 0:
+                raise AttributeError("No edge to map %s to" % edge.id)
+            elif multiplicity > 1 and fold_all_edges:
+                raise AttributeError("Need to specify image of edge %s, multiplicity %d" % (edge.id, multiplicity))
+            else:
+                edgemap[edge] = image.edgedict[edgeids[0]]
+        print "Homomorphism now completely defined, congratulations!"
+                
+        
+    #The following is obsolete...    
     def validate_homomorphism(self, map, image=None):
         """Checks that a dictionary defines a graph homomorphism"""
         if image==None:
@@ -282,5 +341,9 @@ def Bouquet(n):
     
 def Cycle(n):
     return Graph(range(1,n+1), [[i,i+1] for i in range(1,n)] + [[n,1]])
+    
+#Defining some useful graphs in advance:
+
+K5 = CompleteGraph(5)
          
     
